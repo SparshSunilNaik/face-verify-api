@@ -1,0 +1,12 @@
+# Stable stack that avoids the tf-keras/retinaface drama
+tensorflow==2.15.0
+keras==2.15.0
+deepface==0.0.93
+mtcnn==0.1.1
+opencv-python==4.10.0.84
+pillow==10.4.0
+numpy==1.26.4
+
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
