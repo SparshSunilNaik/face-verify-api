@@ -69,7 +69,7 @@
       inner += '<g transform="translate(70 40) scale(.66)">' + person(PEOPLE[c.who], { smile: true }) + "</g>";
     } else {
       var body = person(PEOPLE[c.who], c.opts);
-      if (c.sideways) body = '<g transform="translate(100 125) rotate(90) scale(.8) translate(-100 -125)">' + body + "</g>";
+      if (c.sideways) body = '<g transform="translate(100 125) rotate(-90) scale(.8) translate(-100 -125)">' + body + "</g>";
       inner += body;
     }
     if (c.dim) inner += '<rect width="200" height="250" fill="#05070c" opacity=".62"/>';
