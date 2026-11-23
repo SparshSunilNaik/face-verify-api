@@ -52,8 +52,8 @@
       '<path d="' + line(G) + '" fill="none" stroke="' + m + '" stroke-width="2"/><path d="' + line(I) + '" fill="none" stroke="' + n + '" stroke-width="2"/>' +
       '<line x1="' + X(t) + '" x2="' + X(t) + '" y1="' + (T - 6) + '" y2="' + B + '" stroke="' + ink + '" stroke-width="2" stroke-dasharray="4 3"/>' +
       '<text x="' + (X(t) + 6) + '" y="' + (T + 4) + '" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" fill="' + ink + '">' + t.toFixed(2) + "</text>" +
-      '<text x="' + (X(t) - 6) + '" y="' + (B - 8) + '" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10" fill="' + m + '">Match</text>' +
-      '<text x="' + (X(t) + 6) + '" y="' + (B - 8) + '" font-family="IBM Plex Mono, monospace" font-size="10" fill="' + n + '">No Match</text>';
+      '<text x="' + (X(t) - 6) + '" y="' + (T + 22) + '" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10" fill="' + m + '">Match</text>' +
+      '<text x="' + (X(t) + 6) + '" y="' + (T + 22) + '" font-family="IBM Plex Mono, monospace" font-size="10" fill="' + n + '">No Match</text>';
     var far = cdf(t, I) * 100, frr = (1 - cdf(t, G)) * 100;
     el.querySelector("#far").textContent = pct(far);
     el.querySelector("#frr").textContent = pct(frr);
