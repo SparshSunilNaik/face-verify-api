@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Face Verify API</title>
+  <meta name="description" content="How face-verify-api decides whether two photos show the same person: detection, rotation fallback, alignment, FaceNet and ArcFace embeddings, cosine distance and the threshold. An interactive explainer with the full API reference.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none' stroke='%230aa9cc' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M4 11V4h7M21 4h7v7M28 21v7h-7M11 28H4v-7'/%3E%3Ccircle cx='16' cy='15' r='6' stroke='%23111318'/%3E%3C/svg%3E">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("fv-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "light"); }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="#top" aria-label="Face Verify API, back to top">
+        <svg viewBox="0 0 32 32" fill="none" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M4 11V4h7M21 4h7v7M28 21v7h-7M11 28H4v-7" stroke="var(--scan)"/><circle cx="16" cy="14" r="5.5" stroke="currentColor"/><path d="M8.5 25c1.6-4 4.3-5.6 7.5-5.6s5.9 1.6 7.5 5.6" stroke="currentColor"/></svg>
+        Face Verify API
+      </a>
+      <nav class="nav" aria-label="Sections">
+        <a href="#pipeline">Pipeline</a>
+        <a href="#threshold">Threshold</a>
+        <a href="#versions">Versions</a>
+        <a href="#api">API</a>
+        <a href="#run">Run it</a>
+      </nav>
+      <button class="icon-btn theme-btn" id="theme-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a9 9 0 1 0 11 11Z"/></svg>
+      </button>
+      <a class="icon-btn" href="https://github.com/SparshSunilNaik/face-verify-api" aria-label="Source on GitHub" title="Source on GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <main id="top">
+    <div class="wrap">
+      <section class="hero">
+        <div>
+          <h1>Same person? <em>Ask the API.</em></h1>
+          <p><b>face-verify-api</b> is a FastAPI service built at a hackathon. Send it a photo and it tells you whether the face matches a reference: it finds the face, turns it into 512 numbers, and measures how far those numbers sit from the reference's.</p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#pipeline">Walk through a verification</a>
+            <a class="btn" href="#api">API reference</a>
+          </div>
+          <div class="hero-facts">
+            <div><b>4</b>API versions</div>
+            <div><b>512</b>numbers per face</div>
+            <div><b>0.30</b>default threshold</div>
+            <div><b>0.95</b>min face confidence</div>
+          </div>
+        </div>
+        <div class="card hero-rig" id="rig" aria-label="Animated example verification"></div>
+      </section>
+
+      <section class="block" id="pipeline">
+        <div class="sec-head">
+          <span class="label">01 / Pipeline</span>
+          <h2>Six steps from photo to verdict</h2>
+          <p>Pick a live photo and run it against the enrolled reference. Each step follows the FaceNet versions of the API (<code>app.py</code> to <code>app2.py</code>). The faces are drawings and the numbers are illustrative; the logic, checks and error messages are the API's own.</p>
+        </div>
+        <div class="lab">
+          <aside class="card cast" id="cast" aria-label="Choose a live photo"></aside>
+          <div class="card bench" id="bench"></div>
+        </div>
+      </section>
+
+      <section class="block" id="threshold">
+        <div class="sec-head">
+          <span class="label">02 / Threshold</span>
+          <h2>Where you draw the line</h2>
+          <p>Photos of the same person land at small distances and different people land far apart, but the two piles overlap at the edges. The threshold decides who gets in. Drag it to trade wrongly accepted strangers against wrongly rejected owners.</p>
+        </div>
+        <div class="card thr" id="thr"></div>
+      </section>
+
+      <section class="block" id="versions">
+        <div class="sec-head">
+          <span class="label">03 / Versions</span>
+          <h2>Four versions in one repo</h2>
+          <p>The hackathon build grew in steps, and every step is still in the repository as its own file. Each one runs on its own with uvicorn.</p>
+        </div>
+        <div class="timeline" id="timeline"></div>
+        <div class="helpers" id="helpers"></div>
+      </section>
+
+      <section class="block" id="api">
+        <div class="sec-head">
+          <span class="label">04 / API</span>
+          <h2>Every endpoint, every version</h2>
+          <p>Choose a version, then an endpoint, to see its inputs, its exact response shape and a ready-to-run <code>curl</code> command.</p>
+        </div>
+        <div class="api">
+          <aside class="card api-side" id="api-side"></aside>
+          <div class="card api-main" id="api-main" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="block" id="run">
+        <div class="sec-head">
+          <span class="label">05 / Run it</span>
+          <h2>Install the right stack for the file you run</h2>
+          <p>Each version needs different libraries, and <code>requirements.txt</code> only covers the DeepFace script. These commands install what each file actually imports.</p>
+        </div>
+        <div class="runs" id="runs"></div>
+      </section>
+
+      <section class="block" id="issues">
+        <div class="sec-head">
+          <span class="label">06 / Before you deploy</span>
+          <h2>Things to fix first</h2>
+          <p>It's a hackathon backup, so a few shortcuts are still in the code.</p>
+        </div>
+        <div class="issues" id="issue-list"></div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>An explainer for <a href="https://github.com/SparshSunilNaik/face-verify-api">face-verify-api</a> by Sparsh Sunil Naik. Faces are illustrations; no photos or camera are used on this page.</span>
+      <span>FastAPI, facenet-pytorch, InsightFace</span>
+    </div>
+  </footer>
+
+  <script src="js/theme.js"></script>
+  <script src="js/faces.js"></script>
+  <script src="js/pipeline.js"></script>
+  <script src="js/threshold.js"></script>
+  <script src="js/reference.js"></script>
+  <script src="js/copy.js"></script>
+</body>
+</html>
