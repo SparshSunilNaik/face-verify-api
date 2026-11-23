@@ -39,6 +39,8 @@
         { m: "POST", p: "/reload-ref-file", desc: "Replace the reference with an uploaded photo.", fields: [{ name: "ref_file", type: "file", note: "new reference" }], res: { ok: true, ref_path: "uploaded:me.jpg" } },
         { m: "POST", p: "/reload-ref-path", desc: "Replace the reference from a server path.", fields: [{ name: "ref_image_path", type: "string, form", note: "path on the server" }], res: { ok: true, ref_path: "me.jpg" } },
         { m: "POST", p: "/verify-file", desc: "Disabled so callers can't bring their own reference.", fields: [{ name: "ref_file", type: "file", note: "" }, LIVE], res: { detail: "Pairwise verification disabled. Use /verify-live-file." }, status: 403 },
+        { m: "POST", p: "/verify-text", desc: "Also disabled, for the same reason.", fields: [{ name: "ref_file", type: "file", note: "" }, LIVE], res: { detail: "Pairwise verification disabled. Use /verify-live-text." }, status: 403 },
+        { m: "GET", p: "/ui", open: true, desc: "Desktop page: open the webcam, snap a frame, send it to /verify-live-text.", fields: [], res: "<html> webcam test page", text: true },
         { m: "GET", p: "/mobile", open: true, desc: "Phone page: take a selfie, verify, auto-close on Match (?autoclose=10, ?close_url=...), lock with Retry on No Match.", fields: [], res: "<html> phone camera page", text: true },
       ],
     },
@@ -55,6 +57,7 @@
         { m: "POST", p: "/reload-ref-file", desc: "Replace the reference with an upload.", fields: [{ name: "ref_file", type: "file", note: "new reference" }], res: { ok: true, ref_path: "uploaded:me.jpg" } },
         { m: "POST", p: "/reload-ref-path", desc: "Replace the reference from a server path.", fields: [{ name: "ref_image_path", type: "string, form", note: "path on the server" }], res: { ok: true, ref_path: "me.jpg" } },
         { m: "GET", p: "/ui", open: true, desc: "Desktop webcam page with an API key box (or ?k=...).", fields: [], res: "<html> webcam test page", text: true },
+        { m: "GET", p: "/mobile", open: true, desc: "Phone page: take a photo, enter the key, verify.", fields: [], res: "<html> phone camera page", text: true },
       ],
     },
     {
@@ -70,6 +73,8 @@
         { m: "POST", p: "/verify-live-b64", json: true, desc: "Base64 photo plus who in a JSON body.", fields: [{ name: "live_image_b64", type: "string", note: "base64 or data URL" }, WHO, THR], res: FACENET4 },
         { m: "POST", p: "/reload-ref-file", desc: "Enrol or replace one person from an upload.", fields: [{ name: "ref_file", type: "file", note: "their photo" }, { name: "who", type: "string, required", note: "name to store under" }], res: { ok: true, who: "amya", ref_path: "uploaded:amya.jpg" } },
         { m: "POST", p: "/reload-ref-path", desc: "Enrol or replace one person from a server path.", fields: [{ name: "ref_image_path", type: "string, form", note: "path on the server" }, { name: "who", type: "string, required", note: "name to store under" }], res: { ok: true, who: "rishi", ref_path: "rishi.jpg" } },
+        { m: "GET", p: "/ui", open: true, desc: "Desktop webcam page with key box and a person picker (or ?k=...&who=amya).", fields: [], res: "<html> webcam test page", text: true },
+        { m: "GET", p: "/mobile", open: true, desc: "Phone page with key box and person picker.", fields: [], res: "<html> phone camera page", text: true },
       ],
     },
   ];
